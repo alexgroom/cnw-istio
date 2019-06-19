@@ -5,7 +5,7 @@ pipeline {
   stages {
     stage('Build JAR') { 
       steps {
-        sh "cd thorntail-inventory"  
+        sh "cd inventory-thorntail"  
         sh "mvn package"
         stash name:"jar", includes:"target/inventory-1.0-SNAPSHOT-thorntail.jar"
       }
