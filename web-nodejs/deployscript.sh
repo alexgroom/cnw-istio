@@ -51,3 +51,10 @@ oc set env dc/inventory AB_PROMETHEUS_OFF=true
 oc new-app jenkins-ephemeral --param=MEMORY_LIMIT="2Gi"
 cd labs/inventory-thorntail
 oc new-app . --name=inventory-pipeline --strategy=pipeline
+
+oc delete pod -l deploymentconfig=inventory
+
+
+oc create -f /projects/labs/gateway-vertx/openshift/istio-gateway.yml
+sed s/COOLSTORE_PROJECT/coolstore1/g /projects/labs/gateway-vertx/openshift/virtualservice.yml | oc create -f -
+oc set env dc/web COOLSTORE_GW_ENDPOINT=http://istio-ingressgateway-istio-system.apps.alton-fdfb.openshiftworkshop.com/coolstore1
