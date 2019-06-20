@@ -1,3 +1,16 @@
+
+oc login -u user1 -p openshift
+oc project coolstore1
+
+cd /projects/labs/inventory-thorntal
+mvn clean fabric8:deploy 
+cd /projects/labs/catalog-spring-boot
+mvn clean fabric8:deploy 
+cd /projects/labs/gateway-vertx
+mvn clean fabric8:deploy 
+
+cd /projects/labs
+
 oc new-app nodejs:8~https://github.com/mcouliba/cloud-native-labs.git#ocp-3.11 \
         --context-dir=web-nodejs \
         --name=web \
@@ -54,7 +67,26 @@ oc new-app . --name=inventory-pipeline --strategy=pipeline
 
 oc delete pod -l deploymentconfig=inventory
 
+oc rollout pause dc/catalog 
+oc set probe dc/catalog --readiness --liveness --remove 
+oc patch dc/catalog --patch '{"spec": {"template": {"metadata": {"annotations": {"sidecar.istio.io/inject": "true"}}}}}' 
+oc patch dc/catalog --patch '{"spec": {"template": {"spec": {"containers": [{"name": "spring-boot", "command" : ["/bin/bash"], "args": ["-c", "until $(curl -o /dev/null -s -I -f http://localhost:15000); do echo \"Waiting for Istio Sidecar...\"; sleep 1; done; sleep 10; /usr/local/s2i/run"]}]}}}}' 
+oc rollout resume dc/catalog
+
+oc rollout pause dc/inventory
+oc set probe dc/inventory --readiness --liveness --remove
+oc patch dc/inventory --patch '{"spec": {"template": {"metadata": {"annotations": {"sidecar.istio.io/inject": "true"}}}}}'
+oc patch dc/inventory --patch '{"spec": {"template": {"spec": {"containers": [{"name": "thorntail-v2", "command" : ["/bin/bash"], "args": ["-c", "until $(curl -o /dev/null -s -I -f http://localhost:15000); do echo \"Waiting for Istio Sidecar...\"; sleep 1; done; sleep 10; /usr/local/s2i/run"]}]}}}}'
+oc rollout resume dc/inventory
+
+oc rollout pause dc/gateway
+oc set probe dc/gateway --readiness --liveness --remove
+oc patch dc/gateway --patch '{"spec": {"template": {"metadata": {"annotations": {"sidecar.istio.io/inject": "true"}}}}}'
+oc patch dc/gateway --patch '{"spec": {"template": {"spec": {"containers": [{"name": "vertx", "command" : ["/bin/bash"], "args": ["-c", "until $(curl -o /dev/null -s -I -f http://localhost:15000); do echo \"Waiting for Istio Sidecar...\"; sleep 1; done; sleep 10; /usr/local/s2i/run"]}]}}}}'
+oc rollout resume dc/gateway
 
 oc create -f /projects/labs/gateway-vertx/openshift/istio-gateway.yml
 sed s/COOLSTORE_PROJECT/coolstore1/g /projects/labs/gateway-vertx/openshift/virtualservice.yml | oc create -f -
-oc set env dc/web COOLSTORE_GW_ENDPOINT=http://istio-ingressgateway-istio-system.apps.alton-fdfb.openshiftworkshop.com/coolstore1
+
+CATALOGHOST=$(oc get routes catalog -o jsonpath='{.spec.host}')
+oc set env dc/web COOLSTORE_GW_ENDPOINT="${CATALOGHOST/catalog-coolstore1/http://istio-ingressgateway-istio-system}"/coolstore1
