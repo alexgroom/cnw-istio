@@ -6,26 +6,21 @@ pipeline {
     stage('Build JAR') { 
       steps {
         sh "cd inventory-thorntail && mvn package"
-        sh "pwd"
         stash name:"jar", includes:"inventory-thorntail/target/inventory-1.0-SNAPSHOT-thorntail.jar"
       }
     }
     stage('Build Image') { 
       steps {
-        sh "cd inventory-thorntail"
         unstash name:"jar"
-        sh "ls -la"
         script {
           openshift.withCluster() {
-            openshift.startBuild("inventory-s2i", "--from-file=target/inventory-1.0-SNAPSHOT-thorntail.jar", "--wait")
+            openshift.startBuild("inventory-s2i", "--from-file=inventory-thorntail/target/inventory-1.0-SNAPSHOT-thorntail.jar", "--wait")
           }
         }
       }
     }
     stage('Deploy') { 
       steps {
-        sh "cd inventory-thorntail"
-        sh "pwd"  
         script {
           openshift.withCluster() {
             def dc = openshift.selector("dc", "inventory")
