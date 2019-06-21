@@ -12,8 +12,11 @@ pipeline {
     }
     stage('Build Image') { 
       steps {
-        sh "pwd"
+        sh "ls -la"
         unstash name:"jar"
+        sh "ls -la"
+        sh "ls -la inventory-thorntail"
+        sh "ls -la inventory-thorntail/target"
         script {
           openshift.withCluster() {
             openshift.startBuild("inventory-s2i", "--from-file=inventory-thorntail/target/inventory-1.0-SNAPSHOT-thorntail.jar", "--wait")
