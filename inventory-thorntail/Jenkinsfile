@@ -6,11 +6,13 @@ pipeline {
     stage('Build JAR') { 
       steps {
         sh "cd inventory-thorntail && mvn package"
-        stash name:"jar", includes:"inventory-thorntail/target/inventory-1.0-SNAPSHOT-thorntail.jar"
+        sh "pwd"
+        stash name:"jar", includes:"target/inventory-1.0-SNAPSHOT-thorntail.jar"
       }
     }
     stage('Build Image') { 
       steps {
+        sh "pwd"
         unstash name:"jar"
         script {
           openshift.withCluster() {
