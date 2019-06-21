@@ -1,8 +1,8 @@
 
 oc login -u user2 -p openshift
-oc project coolstore2
+oc project coolstore1
 
-cd /projects/labs/inventory-thorntal
+cd /projects/labs/inventory-thorntail
 mvn clean fabric8:deploy 
 cd /projects/labs/catalog-spring-boot
 mvn clean fabric8:deploy 
@@ -88,7 +88,7 @@ oc patch dc/gateway --patch '{"spec": {"template": {"spec": {"containers": [{"na
 oc rollout resume dc/gateway
 
 oc create -f /projects/labs/gateway-vertx/openshift/istio-gateway.yml
-sed s/COOLSTORE_PROJECT/coolstore2/g /projects/labs/gateway-vertx/openshift/virtualservice.yml | oc create -f -
+sed s/COOLSTORE_PROJECT/coolstore1/g /projects/labs/gateway-vertx/openshift/virtualservice.yml | oc create -f -
 
 CATALOGHOST=$(oc get routes catalog -o jsonpath='{.spec.host}')
-oc set env dc/web COOLSTORE_GW_ENDPOINT="${CATALOGHOST/catalog-coolstore2/http://istio-ingressgateway-istio-system}"/coolstore2
+oc set env dc/web COOLSTORE_GW_ENDPOINT="${CATALOGHOST/catalog-coolstore1/http://istio-ingressgateway-istio-system}"/coolstore1
