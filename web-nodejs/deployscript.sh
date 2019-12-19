@@ -1,5 +1,5 @@
 
-oc login -u user2 -p openshift
+oc login -u user1 -p openshift
 oc project coolstore1
 
 cd /projects/labs/inventory-thorntail
@@ -11,7 +11,7 @@ mvn clean fabric8:deploy
 
 cd /projects/labs
 
-oc new-app nodejs:8~https://github.com/mcouliba/cloud-native-labs.git#ocp-3.11 \
+oc new-app nodejs:8~https://github.com/alexgroom/cnw-istio.git \
         --context-dir=web-nodejs \
         --name=web \
         --labels=app=web,version=1.0
