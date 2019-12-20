@@ -63,7 +63,7 @@ oc set triggers dc/inventory --manual
 oc set env dc/inventory AB_PROMETHEUS_OFF=true
 oc new-app jenkins-ephemeral --param=MEMORY_LIMIT="2Gi"
 cd /projects/labs/inventory-thorntail
-oc new-app . --name=inventory-pipeline --strategy=pipeline
+oc new-app . --name=inventory-pipeline --strategy=pipeline --context-dir='inventory-thorntail'
 
 oc delete pod -l deploymentconfig=inventory
 
