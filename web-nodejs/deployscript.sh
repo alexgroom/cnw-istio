@@ -115,6 +115,6 @@ oc expose svc inventoryq
 
 
 oc new-app quay.io/quarkus/ubi-quarkus-native-s2i:19.2.1~https://github.com/alexgroom/cnw-istio.git --context-dir=inventory-quarkus --name=inventory-quarkus
-oc patch bc/inventory-quarkus -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"4Gi"}}}}'
+oc patch bc/inventory-quarkus -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"6Gi"}}}}'
 oc start-build inventory-quarkus
 oc expose svc inventory-quarkus
