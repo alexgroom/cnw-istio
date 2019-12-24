@@ -93,6 +93,17 @@ sed s/COOLSTORE_PROJECT/coolstore1/g /projects/labs/gateway-vertx/openshift/virt
 CATALOGHOST=$(oc get routes catalog -o jsonpath='{.spec.host}')
 oc set env dc/web COOLSTORE_GW_ENDPOINT="${CATALOGHOST/catalog-coolstore1/http://istio-ingressgateway-istio-system}"/coolstore1
 
+
+oc new-project cool1
+oc project cool1
+
+oc new-app postgresql-persistent \
+    --param=DATABASE_SERVICE_NAME=inventory-postgresql \
+    --param=POSTGRESQL_DATABASE=inventory \
+    --param=POSTGRESQL_USER=inventory \
+    --param=POSTGRESQL_PASSWORD=inventory \
+    --labels=app=inventory
+
 cd labs/inventory-quarkus
 export MAVEN_OPTS="-Xmx3000m"
 mvn clean package -DskipTests
@@ -101,6 +112,7 @@ oc start-build inventoryq --from-file=target/inventory-quarkus-1.0-SNAPSHOT-runn
 oc new-app inventoryq
 oc label dc/inventoryq app.kubernetes.io/part-of=coolstore app.kubernetes.io/name=java app.kubernetes.io/instance=inventoryq 
 oc expose svc inventoryq
+
 
 oc new-app quay.io/quarkus/ubi-quarkus-native-s2i:19.2.1~https://github.com/alexgroom/cnw-istio.git --context-dir=inventory-quarkus --name=inventory-quarkus
 oc patch bc/inventory-quarkus -p '{"spec":{"resources":{"limits":{"cpu":"4", "memory":"4Gi"}}}}'
