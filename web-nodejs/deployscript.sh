@@ -104,7 +104,7 @@ oc new-app postgresql-persistent \
     --param=POSTGRESQL_PASSWORD=inventory \
     --labels=app=inventory
 
-cd labs/inventory-quarkus
+cd /projects/labs/inventory-quarkus
 export MAVEN_OPTS="-Xmx3000m"
 mvn clean package -DskipTests
 oc new-build --name=inventoryq java --binary=true --labels=app.kubernetes.io/instance=inventoryq 
